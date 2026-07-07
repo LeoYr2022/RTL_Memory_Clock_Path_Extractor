@@ -1,0 +1,126 @@
+{
+  "testcase": "case_001_four_memory_clock_paths",
+  "top": "top",
+  "clock_paths": [
+    {
+      "memory_instance": "u_mem0",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem0_clk",
+      "source_clocks": [
+        "clk_pll0",
+        "clk_osc0"
+      ],
+      "normal_path": [
+        "clk_pll0",
+        "clk_osc0",
+        "u_mem0_clk_mux",
+        "mem0_mux_clk",
+        "u_mem0_clk_divider",
+        "mem0_div_clk",
+        "u_mem0_clk_bypass",
+        "mem0_clk",
+        "u_mem0.CLK"
+      ],
+      "bypass_path": [
+        "clk_pll0",
+        "clk_osc0",
+        "u_mem0_clk_mux",
+        "mem0_mux_clk",
+        "u_mem0_clk_bypass",
+        "mem0_clk",
+        "u_mem0.CLK"
+      ]
+    },
+    {
+      "memory_instance": "u_mem1",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem1_clk",
+      "source_clocks": [
+        "clk_pll1",
+        "clk_osc1"
+      ],
+      "normal_path": [
+        "clk_pll1",
+        "clk_osc1",
+        "u_mem1_clk_mux",
+        "mem1_mux_clk",
+        "u_mem1_clk_divider",
+        "mem1_div_clk",
+        "u_mem1_clk_bypass",
+        "mem1_clk",
+        "u_mem1.CLK"
+      ],
+      "bypass_path": [
+        "clk_pll1",
+        "clk_osc1",
+        "u_mem1_clk_mux",
+        "mem1_mux_clk",
+        "u_mem1_clk_bypass",
+        "mem1_clk",
+        "u_mem1.CLK"
+      ]
+    },
+    {
+      "memory_instance": "u_mem2",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem2_clk",
+      "source_clocks": [
+        "clk_test0",
+        "clk_scan0"
+      ],
+      "normal_path": [
+        "clk_test0",
+        "clk_scan0",
+        "u_mem2_clk_mux",
+        "mem2_mux_clk",
+        "u_mem2_clk_divider",
+        "mem2_div_clk",
+        "u_mem2_clk_bypass",
+        "mem2_clk",
+        "u_mem2.CLK"
+      ],
+      "bypass_path": [
+        "clk_test0",
+        "clk_scan0",
+        "u_mem2_clk_mux",
+        "mem2_mux_clk",
+        "u_mem2_clk_bypass",
+        "mem2_clk",
+        "u_mem2.CLK"
+      ]
+    },
+    {
+      "memory_instance": "u_mem3",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem3_clk",
+      "source_clocks": [
+        "clk_test1",
+        "clk_scan1"
+      ],
+      "normal_path": [
+        "clk_test1",
+        "clk_scan1",
+        "u_mem3_clk_mux",
+        "mem3_mux_clk",
+        "u_mem3_clk_divider",
+        "mem3_div_clk",
+        "u_mem3_clk_bypass",
+        "mem3_clk",
+        "u_mem3.CLK"
+      ],
+      "bypass_path": [
+        "clk_test1",
+        "clk_scan1",
+        "u_mem3_clk_mux",
+        "mem3_mux_clk",
+        "u_mem3_clk_bypass",
+        "mem3_clk",
+        "u_mem3.CLK"
+      ]
+    }
+  ]
+}

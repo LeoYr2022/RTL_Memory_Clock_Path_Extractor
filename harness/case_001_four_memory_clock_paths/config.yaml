@@ -1,0 +1,9 @@
+testcase: case_001_four_memory_clock_paths
+top: top
+rtl:
+  - rtl/four_memory_clock_paths.sv
+memory:
+  modules:
+    - simple_sram
+clock_port:
+  - CLK
