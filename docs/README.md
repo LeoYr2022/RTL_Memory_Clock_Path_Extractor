@@ -42,19 +42,24 @@ Exporter
   
     ```bash
     python scripts/json_clock_paths_to_drawio.py --input harness/case_001_four_memory_clock_paths/expected/expected_clock_paths.json --output harness/case_001_four_memory_clock_paths/expected/four_memory_clock_paths.drawio
+    python scripts/json_clock_paths_to_drawio.py --input harness/case_002_generate_memory_clock_paths/expected/expected_clock_paths.json --output harness/case_002_generate_memory_clock_paths/expected/generate_memory_clock_paths.drawio
     ```
   
 - Regression
   - Sample RTL: `harness/case_001_four_memory_clock_paths/rtl/four_memory_clock_paths.sv`
   - Golden: `harness/case_001_four_memory_clock_paths/expected/expected_clock_paths.json`
   - Draw.io: `harness/case_001_four_memory_clock_paths/expected/four_memory_clock_paths.drawio`
+  - Generate RTL: `harness/case_002_generate_memory_clock_paths/rtl/four_memory_clock_paths_generate.sv`
+  - Generate Golden: `harness/case_002_generate_memory_clock_paths/expected/expected_clock_paths.json`
+  - Generate Draw.io: `harness/case_002_generate_memory_clock_paths/expected/generate_memory_clock_paths.drawio`
 
 ## 项目目录
 
 ```bash
 ├───docs
 ├───harness
-│   └───case_001_four_memory_clock_paths
+│   ├───case_001_four_memory_clock_paths
+│   └───case_002_generate_memory_clock_paths
 ├───rtl
 ├───scripts
 └───temp

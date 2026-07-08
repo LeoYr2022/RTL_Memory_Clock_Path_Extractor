@@ -1,0 +1,126 @@
+{
+  "testcase": "case_002_generate_memory_clock_paths",
+  "top": "top",
+  "clock_paths": [
+    {
+      "memory_instance": "gen_mem[0].u_mem",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem_clk[0]",
+      "source_clocks": [
+        "clk_pll",
+        "clk_osc"
+      ],
+      "normal_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[0].u_mem_clk_mux",
+        "mem_mux_clk[0]",
+        "gen_mem[0].u_mem_clk_divider",
+        "mem_div_clk[0]",
+        "gen_mem[0].u_mem_clk_bypass",
+        "mem_clk[0]",
+        "gen_mem[0].u_mem.CLK"
+      ],
+      "bypass_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[0].u_mem_clk_mux",
+        "mem_mux_clk[0]",
+        "gen_mem[0].u_mem_clk_bypass",
+        "mem_clk[0]",
+        "gen_mem[0].u_mem.CLK"
+      ]
+    },
+    {
+      "memory_instance": "gen_mem[1].u_mem",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem_clk[1]",
+      "source_clocks": [
+        "clk_pll",
+        "clk_osc"
+      ],
+      "normal_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[1].u_mem_clk_mux",
+        "mem_mux_clk[1]",
+        "gen_mem[1].u_mem_clk_divider",
+        "mem_div_clk[1]",
+        "gen_mem[1].u_mem_clk_bypass",
+        "mem_clk[1]",
+        "gen_mem[1].u_mem.CLK"
+      ],
+      "bypass_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[1].u_mem_clk_mux",
+        "mem_mux_clk[1]",
+        "gen_mem[1].u_mem_clk_bypass",
+        "mem_clk[1]",
+        "gen_mem[1].u_mem.CLK"
+      ]
+    },
+    {
+      "memory_instance": "gen_mem[2].u_mem",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem_clk[2]",
+      "source_clocks": [
+        "clk_pll",
+        "clk_osc"
+      ],
+      "normal_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[2].u_mem_clk_mux",
+        "mem_mux_clk[2]",
+        "gen_mem[2].u_mem_clk_divider",
+        "mem_div_clk[2]",
+        "gen_mem[2].u_mem_clk_bypass",
+        "mem_clk[2]",
+        "gen_mem[2].u_mem.CLK"
+      ],
+      "bypass_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[2].u_mem_clk_mux",
+        "mem_mux_clk[2]",
+        "gen_mem[2].u_mem_clk_bypass",
+        "mem_clk[2]",
+        "gen_mem[2].u_mem.CLK"
+      ]
+    },
+    {
+      "memory_instance": "gen_mem[3].u_mem",
+      "memory_module": "simple_sram",
+      "clock_pin": "CLK",
+      "clock_net": "mem_clk[3]",
+      "source_clocks": [
+        "clk_pll",
+        "clk_osc"
+      ],
+      "normal_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[3].u_mem_clk_mux",
+        "mem_mux_clk[3]",
+        "gen_mem[3].u_mem_clk_divider",
+        "mem_div_clk[3]",
+        "gen_mem[3].u_mem_clk_bypass",
+        "mem_clk[3]",
+        "gen_mem[3].u_mem.CLK"
+      ],
+      "bypass_path": [
+        "clk_pll",
+        "clk_osc",
+        "gen_mem[3].u_mem_clk_mux",
+        "mem_mux_clk[3]",
+        "gen_mem[3].u_mem_clk_bypass",
+        "mem_clk[3]",
+        "gen_mem[3].u_mem.CLK"
+      ]
+    }
+  ]
+}

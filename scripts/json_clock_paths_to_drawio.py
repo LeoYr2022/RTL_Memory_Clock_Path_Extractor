@@ -59,10 +59,24 @@ COLUMN_TITLES = {
 BASE_X = 40
 BASE_Y = 90
 COL_GAP = 35
+SOURCE_MUX_MIN_GAP = 90
+SOURCE_LANE_MIN_GAP = 14
 ROW_GAP = 95
 NODE_HEIGHT = 48
+SOURCE_NODE_HEIGHT = 34
+SOURCE_NODE_GAP = 12
 
 ROW_FILLS = ("#fff2cc", "#d5e8d4", "#dae8fc", "#f8cecc")
+SOURCE_EDGE_COLORS = (
+    "#2f6fd6",
+    "#d65a31",
+    "#2f8f4e",
+    "#8a5fbf",
+    "#b7791f",
+    "#0f766e",
+    "#c026d3",
+    "#475569",
+)
 
 STYLE_HEADER = (
     "rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;"
@@ -94,10 +108,8 @@ STYLE_MEMORY = (
     "shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;"
     "backgroundOutline=1;size=15;fillColor=#f5f5f5;strokeColor=#666666;"
 )
-STYLE_EDGE = (
-    "endArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"
-    "strokeColor=#333333;"
-)
+STYLE_EDGE_BASE = "endArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"
+STYLE_EDGE = STYLE_EDGE_BASE + "strokeColor=#333333;"
 STYLE_BYPASS_EDGE = STYLE_EDGE + "dashed=1;strokeColor=#b85450;"
 
 
@@ -159,13 +171,91 @@ def find_first(items: list[str], pattern: str, fallback: str) -> str:
     return fallback
 
 
-def column_x_positions() -> dict[str, int]:
+def unique_source_clocks(clock_paths: list[dict[str, Any]]) -> list[str]:
+    sources: list[str] = []
+    seen: set[str] = set()
+    for path in clock_paths:
+        for source_clock in path["source_clocks"]:
+            if source_clock not in seen:
+                sources.append(source_clock)
+                seen.add(source_clock)
+    return sources
+
+
+def source_stack_height(source_count: int) -> int:
+    if source_count == 0:
+        return 0
+    return (
+        source_count * SOURCE_NODE_HEIGHT
+        + (source_count - 1) * SOURCE_NODE_GAP
+    )
+
+
+def row_stack_height(row_count: int) -> int:
+    return (row_count - 1) * ROW_GAP + NODE_HEIGHT
+
+
+def source_start_y(row_count: int, source_count: int) -> int:
+    extra_row_space = row_stack_height(row_count) - source_stack_height(source_count)
+    return BASE_Y + max(0, extra_row_space // 2)
+
+
+def source_mux_gap(source_count: int) -> int:
+    return max(SOURCE_MUX_MIN_GAP, (source_count + 1) * SOURCE_LANE_MIN_GAP)
+
+
+def gap_after_column(column: str, source_count: int) -> int:
+    if column == "source":
+        return source_mux_gap(source_count)
+    return COL_GAP
+
+
+def content_width(source_count: int) -> int:
+    total_width = 0
+    for column_index, column in enumerate(COLUMN_ORDER):
+        total_width += COLUMN_WIDTHS[column]
+        if column_index < len(COLUMN_ORDER) - 1:
+            total_width += gap_after_column(column, source_count)
+    return total_width
+
+
+def content_width_from_positions(x_positions: dict[str, int]) -> int:
+    last_column = COLUMN_ORDER[-1]
+    return x_positions[last_column] - BASE_X + COLUMN_WIDTHS[last_column]
+
+
+def column_x_positions(source_count: int) -> dict[str, int]:
     positions: dict[str, int] = {}
     x_pos = BASE_X
     for column in COLUMN_ORDER:
         positions[column] = x_pos
-        x_pos += COLUMN_WIDTHS[column] + COL_GAP
+        x_pos += COLUMN_WIDTHS[column] + gap_after_column(column, source_count)
     return positions
+
+
+def source_node_center_y(source_index: int, row_count: int, source_count: int) -> int:
+    node_y = source_start_y(row_count, source_count)
+    node_y += source_index * (SOURCE_NODE_HEIGHT + SOURCE_NODE_GAP)
+    return node_y + SOURCE_NODE_HEIGHT // 2
+
+
+def source_lane_x(
+    source_index: int,
+    source_count: int,
+    x_positions: dict[str, int],
+) -> int:
+    source_right = x_positions["source"] + COLUMN_WIDTHS["source"]
+    lane_spacing = source_mux_gap(source_count) / (source_count + 1)
+    return round(source_right + (source_index + 1) * lane_spacing)
+
+
+def source_edge_style(source_index: int, entry_y: float) -> str:
+    color = SOURCE_EDGE_COLORS[source_index % len(SOURCE_EDGE_COLORS)]
+    return (
+        STYLE_EDGE_BASE
+        + f"strokeColor={color};fontColor={color};"
+        + f"exitX=1;exitY=0.5;entryX=0;entryY={entry_y:.3f};"
+    )
 
 
 def add_cell(
@@ -212,6 +302,7 @@ def add_edge(
     style: str,
     value: str = "",
     parent: str = "1",
+    points: list[tuple[int, int]] | None = None,
 ) -> ET.Element:
     edge = ET.SubElement(
         root,
@@ -226,7 +317,18 @@ def add_edge(
             "target": target_id,
         },
     )
-    ET.SubElement(edge, "mxGeometry", {"relative": "1", "as": "geometry"})
+    geometry = ET.SubElement(edge, "mxGeometry", {"relative": "1", "as": "geometry"})
+    if points:
+        point_array = ET.SubElement(geometry, "Array", {"as": "points"})
+        for x_pos, y_pos in points:
+            ET.SubElement(
+                point_array,
+                "mxPoint",
+                {
+                    "x": str(x_pos),
+                    "y": str(y_pos),
+                },
+            )
     return edge
 
 
@@ -244,12 +346,38 @@ def add_header(root: ET.Element, x_positions: dict[str, int]) -> None:
         )
 
 
+def add_source_clock_nodes(
+    root: ET.Element,
+    source_clocks: list[str],
+    row_count: int,
+    x_positions: dict[str, int],
+) -> dict[str, str]:
+    node_ids: dict[str, str] = {}
+    start_y = source_start_y(row_count, len(source_clocks))
+
+    for source_index, source_clock in enumerate(source_clocks):
+        node_id = stable_id("source", source_clock)
+        node_ids[source_clock] = node_id
+        add_cell(
+            root,
+            node_id,
+            source_clock,
+            STYLE_SOURCE,
+            x_positions["source"],
+            start_y + source_index * (SOURCE_NODE_HEIGHT + SOURCE_NODE_GAP),
+            COLUMN_WIDTHS["source"],
+            SOURCE_NODE_HEIGHT,
+        )
+
+    return node_ids
+
+
 def add_clock_path_row(
     root: ET.Element,
     path: dict[str, Any],
     row_index: int,
     x_positions: dict[str, int],
-) -> None:
+) -> dict[str, str]:
     row_y = BASE_Y + row_index * ROW_GAP
     memory = path["memory_instance"]
     normal_path = path["normal_path"]
@@ -261,11 +389,7 @@ def add_clock_path_row(
     bypass = find_first(normal_path, "_clk_bypass", f"{memory}_clk_bypass")
     clock_net = path["clock_net"]
     memory_pin = f"{memory}.{path['clock_pin']}"
-
-    total_width = (
-        sum(COLUMN_WIDTHS[column] for column in COLUMN_ORDER)
-        + COL_GAP * (len(COLUMN_ORDER) - 1)
-    )
+    total_width = content_width_from_positions(x_positions)
     add_cell(
         root,
         stable_id(memory, "row_bg"),
@@ -278,7 +402,6 @@ def add_clock_path_row(
     )
 
     node_specs = {
-        "source": ("\n".join(path["source_clocks"]), STYLE_SOURCE),
         "mux": (mux, STYLE_BLOCK),
         "mux_net": (mux_net, STYLE_NET),
         "divider": (divider, STYLE_DIVIDER),
@@ -290,6 +413,8 @@ def add_clock_path_row(
 
     node_ids: dict[str, str] = {}
     for column in COLUMN_ORDER:
+        if column == "source":
+            continue
         node_id = stable_id(memory, column)
         node_ids[column] = node_id
         value, style = node_specs[column]
@@ -305,7 +430,6 @@ def add_clock_path_row(
         )
 
     normal_edges = (
-        ("source", "mux"),
         ("mux", "mux_net"),
         ("mux_net", "divider"),
         ("divider", "div_net"),
@@ -330,16 +454,61 @@ def add_clock_path_row(
         STYLE_BYPASS_EDGE,
         "bypass",
     )
+    return node_ids
+
+
+def add_source_edges(
+    root: ET.Element,
+    clock_paths: list[dict[str, Any]],
+    row_node_ids: list[dict[str, str]],
+    source_node_ids: dict[str, str],
+    source_clock_indexes: dict[str, int],
+    x_positions: dict[str, int],
+) -> None:
+    for row_index, (path, node_ids) in enumerate(zip(clock_paths, row_node_ids)):
+        memory = path["memory_instance"]
+        for path_source_index, source_clock in enumerate(path["source_clocks"]):
+            source_index = source_clock_indexes[source_clock]
+            entry_y = (path_source_index + 1) / (len(path["source_clocks"]) + 1)
+            target_y = BASE_Y + row_index * ROW_GAP + round(NODE_HEIGHT * entry_y)
+            lane_x = source_lane_x(source_index, len(source_clock_indexes), x_positions)
+            add_edge(
+                root,
+                stable_id(source_clock, memory, "source_mux"),
+                source_node_ids[source_clock],
+                node_ids["mux"],
+                source_edge_style(source_index, entry_y),
+                source_clock,
+                points=[
+                    (
+                        lane_x,
+                        source_node_center_y(
+                            source_index,
+                            len(clock_paths),
+                            len(source_clock_indexes),
+                        ),
+                    ),
+                    (lane_x, target_y),
+                ],
+            )
 
 
 def build_drawio(data: dict[str, Any], clock_paths: list[dict[str, Any]]) -> ET.ElementTree:
-    x_positions = column_x_positions()
+    source_clocks = unique_source_clocks(clock_paths)
+    source_clock_indexes = {
+        source_clock: source_index
+        for source_index, source_clock in enumerate(source_clocks)
+    }
+    x_positions = column_x_positions(len(source_clocks))
+    diagram_body_height = max(
+        row_stack_height(len(clock_paths)),
+        source_stack_height(len(source_clocks)),
+    )
     width = (
         BASE_X * 2
-        + sum(COLUMN_WIDTHS[column] for column in COLUMN_ORDER)
-        + COL_GAP * (len(COLUMN_ORDER) - 1)
+        + content_width(len(source_clocks))
     )
-    height = BASE_Y + ROW_GAP * len(clock_paths) + 70
+    height = BASE_Y + diagram_body_height + 70
 
     mxfile = ET.Element(
         "mxfile",
@@ -387,8 +556,23 @@ def build_drawio(data: dict[str, Any], clock_paths: list[dict[str, Any]]) -> ET.
     title = f"{data['testcase']} clock paths ({data['top']})"
     add_cell(root, "title", title, STYLE_TITLE, BASE_X, 20, width - BASE_X * 2, 30)
     add_header(root, x_positions)
+    row_node_ids: list[dict[str, str]] = []
     for row_index, path in enumerate(clock_paths):
-        add_clock_path_row(root, path, row_index, x_positions)
+        row_node_ids.append(add_clock_path_row(root, path, row_index, x_positions))
+    source_node_ids = add_source_clock_nodes(
+        root,
+        source_clocks,
+        len(clock_paths),
+        x_positions,
+    )
+    add_source_edges(
+        root,
+        clock_paths,
+        row_node_ids,
+        source_node_ids,
+        source_clock_indexes,
+        x_positions,
+    )
 
     tree = ET.ElementTree(mxfile)
     ET.indent(tree, space="  ")
