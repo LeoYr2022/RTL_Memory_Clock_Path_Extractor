@@ -14,7 +14,14 @@
 - 每一次代码修改后，都要对harness下的case做测试
 
 ---
+## 必读文档 
 
+- ./docs/ARCHITECTURE.md
+- ./docs/DESIGN_DECISIONS.md
+- ./docs/CONTRIBUTING.md
+- ./docs/README.md
+
+---
 # 目录结构
 
 ```
@@ -246,9 +253,4 @@ Graph Pass 可以修改 Graph。
 
 ---
 
-## 什么时候必须更新
 
-- ARCHITECTURE
-- DESIGN_DECISIONS
-- CONTRIBUTING
-- README
